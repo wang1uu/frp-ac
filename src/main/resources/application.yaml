@@ -1,0 +1,13 @@
+server:
+  port: 9777
+
+spring:
+  application:
+    name: frp-ac
+  profiles:
+    active: dev
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    default-enum-type-handler: com.baomidou.mybatisplus.extension.handlers.MybatisEnumTypeHandler
