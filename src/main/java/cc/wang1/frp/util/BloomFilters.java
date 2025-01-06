@@ -1,5 +1,8 @@
 package cc.wang1.frp.util;
 
+import cc.wang1.frp.entity.Host;
+import cc.wang1.frp.enums.HostFlagEnum;
+import cc.wang1.frp.mapper.service.HostMapperService;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
 import org.springframework.util.CollectionUtils;
@@ -8,10 +11,10 @@ import org.springframework.util.StringUtils;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -42,9 +45,10 @@ public class BloomFilters {
     private Long rebuildInterval;
 
     /**
-     * 是否需要重建
+     * 暂存集合
      */
-    private final AtomicBoolean dirty = new AtomicBoolean(false);
+    private final CopyOnWriteArraySet<String> unblockedSet = new CopyOnWriteArraySet<>();
+    private final CopyOnWriteArraySet<String> blockedSet = new CopyOnWriteArraySet<>();
 
     /**
      * guava 布隆过滤器
@@ -75,22 +79,27 @@ public class BloomFilters {
         Runtime.getRuntime().addShutdownHook(new Thread(executorService::shutdown, "Bloom Filter Rebuild Thread Released"));
     }
 
-    public boolean contains(String key) {
-        return Optional.ofNullable(bloomFilter.get()).map(b -> b.mightContain(key)).orElse(false);
+
+    public boolean exist(String key) {
+        if (unblockedSet.contains(key)) {
+            return false;
+        }
+        return Optional.ofNullable(bloomFilter.get()).map(b -> b.mightContain(key)).orElse(false) || blockedSet.contains(key);
     }
 
-    public void put(String key) {
-        if (bloomFilter.get() == null) {
-            return;
-        }
-        bloomFilter.get().put(key);
+    public void block(String key) {
+        blockedSet.add(key);
+    }
+
+    public void unblock(String key) {
+        unblockedSet.add(key);
     }
 
     /**
      * 重建缓存
      */
     public void rebuild() {
-        if (!dirty.get()) {
+        if (blockedSet.isEmpty() && unblockedSet.isEmpty()) {
             Logs.info("There is nothing to rebuild");
             return;
         }
@@ -106,14 +115,34 @@ public class BloomFilters {
                 .orElse(BloomFilter.create(Funnels.stringFunnel(Charset.defaultCharset()), INSERTIONS, FPP));
 
         List<String> data = supplier.get();
-        if (!CollectionUtils.isEmpty(data)) {
-            data.stream().filter(StringUtils::hasText).forEach(newBloomFilter::put);
+
+        if (!CollectionUtils.isEmpty(data) || !blockedSet.isEmpty()) {
+            data.stream().filter(ip -> StringUtils.hasText(ip) && !unblockedSet.contains(ip)).forEach(newBloomFilter::put);
+            blockedSet.stream().filter(ip -> StringUtils.hasText(ip) && !unblockedSet.contains(ip)).forEach(newBloomFilter::put);
         }else {
             Logs.warn("Bloom Filter Rebuild With Empty Data");
         }
 
+        // 持久化
+        try {
+            HostMapperService hostMapperService = SpringContexts.getSpringContext().getBean(HostMapperService.class);
+            blockedSet.stream()
+                    .filter(StringUtils::hasText)
+                    .filter(ip -> !unblockedSet.contains(ip))
+                    .forEach(ip -> {
+                Host host = Host.builder()
+                        .ip(ip)
+                        .flag(HostFlagEnum.DENIED)
+                        .build();
+                hostMapperService.getBaseMapper().upsert(host);
+            });
+            hostMapperService.removeByIds(unblockedSet);
+        }catch (Exception e) {
+            Logs.error("Persist Data Failed. [{}]", Jsons.toJson(e));
+        }
+
         if (!bloomFilter.compareAndSet(oldBloomFilter, newBloomFilter)) {
-            Logs.warn("Bloom Filter Concurrent Rebuild  Failed");
+            Logs.warn("Bloom Filter Concurrent Rebuild Failed");
         }
 
         long end = Clocks.INSTANCE.currentTimeMillis();
