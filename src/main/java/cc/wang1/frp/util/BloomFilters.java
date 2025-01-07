@@ -107,23 +107,20 @@ public class BloomFilters {
         long start = Clocks.INSTANCE.currentTimeMillis();
         Logs.info("Bloom Filter Rebuild Start At [{}]", start);
 
-        // TODO: 2024/12/20 22:19 这里感觉会丢数据
         BloomFilter<String> oldBloomFilter = bloomFilter.get();
-        // 保留旧数据
-        BloomFilter<String> newBloomFilter = Optional.ofNullable(oldBloomFilter)
-                .map(BloomFilter::copy)
-                .orElse(BloomFilter.create(Funnels.stringFunnel(Charset.defaultCharset()), INSERTIONS, FPP));
+        // 创建新的布隆过滤器
+        BloomFilter<String> newBloomFilter = BloomFilter.create(Funnels.stringFunnel(Charset.defaultCharset()), INSERTIONS, FPP);
 
         List<String> data = supplier.get();
 
-        if (!CollectionUtils.isEmpty(data) || !blockedSet.isEmpty()) {
+        if (!CollectionUtils.isEmpty(data) || !blockedSet.isEmpty() || !unblockedSet.isEmpty()) {
             data.stream().filter(ip -> StringUtils.hasText(ip) && !unblockedSet.contains(ip)).forEach(newBloomFilter::put);
             blockedSet.stream().filter(ip -> StringUtils.hasText(ip) && !unblockedSet.contains(ip)).forEach(newBloomFilter::put);
         }else {
             Logs.warn("Bloom Filter Rebuild With Empty Data");
         }
 
-        // 持久化
+        // 持久化变动
         try {
             HostMapperService hostMapperService = SpringContexts.getSpringContext().getBean(HostMapperService.class);
             blockedSet.stream()
