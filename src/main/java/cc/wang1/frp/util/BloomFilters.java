@@ -99,11 +99,6 @@ public class BloomFilters {
      * 重建缓存
      */
     public void rebuild() {
-        if (blockedSet.isEmpty() && unblockedSet.isEmpty()) {
-            Logs.info("There is nothing to rebuild");
-            return;
-        }
-
         long start = Clocks.INSTANCE.currentTimeMillis();
         Logs.info("Bloom Filter Rebuild Start At [{}]", start);
 
