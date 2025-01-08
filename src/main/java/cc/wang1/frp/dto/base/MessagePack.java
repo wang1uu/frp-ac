@@ -1,6 +1,10 @@
-package cc.wang1.frp.dto;
+package cc.wang1.frp.dto.base;
 
+import cc.wang1.frp.controller.advice.StandardEnumJsonSerializer;
+import cc.wang1.frp.enums.VerifiableEnum;
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +22,7 @@ public class MessagePack<T> implements Serializable {
 
     @Getter
     @AllArgsConstructor
-    public static enum StatusCode {
+    public static enum StatusCode implements VerifiableEnum<Integer> {
         // 成功 code >= 0
         SUCCESS(0, "success"),
 
@@ -26,16 +30,18 @@ public class MessagePack<T> implements Serializable {
         ERROR(-1, "system error");
 
         @JsonValue
+        @EnumValue
         private final Integer code;
         private final String desc;
     }
 
-    private StatusCode statusCode = StatusCode.SUCCESS;
+    @JsonSerialize(using = StandardEnumJsonSerializer.class)
+    private StatusCode status;
     private T data;
 
     private String message;
     public String getMessage() {
-        return StringUtils.isNoneBlank(message) ? message : Optional.ofNullable(statusCode).map(StatusCode::getDesc).orElse("");
+        return StringUtils.isNoneBlank(message) ? message : Optional.ofNullable(status).map(StatusCode::getDesc).orElse("");
     }
 
 
