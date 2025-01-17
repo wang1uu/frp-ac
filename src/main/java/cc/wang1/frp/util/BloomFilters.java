@@ -129,15 +129,14 @@ public class BloomFilters {
                 hostMapperService.getBaseMapper().upsert(host);
             });
             hostMapperService.removeByIds(unblockedSet);
+            blockedSet.clear();
+            unblockedSet.clear();
         }catch (Exception e) {
             Logs.error("Persist Data Failed. [{}]", Jsons.toJson(e));
         }
 
         if (!bloomFilter.compareAndSet(oldBloomFilter, newBloomFilter)) {
             Logs.warn("Bloom Filter Concurrent Rebuild Failed");
-        }else {
-            blockedSet.clear();
-            unblockedSet.clear();
         }
 
         long end = Clocks.INSTANCE.currentTimeMillis();
