@@ -1,6 +1,6 @@
 package cc.wang1.frp.dto.base;
 
-import cc.wang1.frp.controller.advice.StandardEnumJsonSerializer;
+import cc.wang1.frp.controller.serializer.StandardEnumJsonSerializer;
 import cc.wang1.frp.enums.VerifiableEnum;
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -27,7 +27,8 @@ public class MessagePack<T> implements Serializable {
         SUCCESS(0, "success"),
 
         // 异常 code < 0
-        ERROR(-1, "system error");
+        ERROR(-1, "system error"),
+        ILLEGAL_ACCESS(-2, "illegal access"),;
 
         @JsonValue
         @EnumValue

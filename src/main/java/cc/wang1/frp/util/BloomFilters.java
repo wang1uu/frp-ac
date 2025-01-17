@@ -88,11 +88,11 @@ public class BloomFilters {
     }
 
     public void block(String key) {
-        blockedSet.add(key);
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(key)) blockedSet.add(key);
     }
 
     public void unblock(String key) {
-        unblockedSet.add(key);
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(key)) unblockedSet.add(key);
     }
 
     /**

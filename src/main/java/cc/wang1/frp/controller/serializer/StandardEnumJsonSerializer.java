@@ -1,4 +1,4 @@
-package cc.wang1.frp.controller.advice;
+package cc.wang1.frp.controller.serializer;
 
 import cc.wang1.frp.dto.base.EnumDTO;
 import cc.wang1.frp.enums.StandardEnum;

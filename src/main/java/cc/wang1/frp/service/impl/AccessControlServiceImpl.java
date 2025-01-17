@@ -33,6 +33,24 @@ public class AccessControlServiceImpl implements AccessControlService, Initializ
     }
 
     @Override
+    public void refresh() {
+        Logs.info("datetime [{}] refresh manually", LocalDateTime.now());
+        bloomFilters.rebuild();
+    }
+
+    @Override
+    public void block(String ip) {
+        Logs.info("block [{}] at [{}]", ip, LocalDateTime.now());
+        bloomFilters.block(ip);
+    }
+
+    @Override
+    public void unblock(String ip) {
+        Logs.info("unblock [{}] at [{}]", ip, LocalDateTime.now());
+        bloomFilters.unblock(ip);
+    }
+
+    @Override
     public void afterPropertiesSet() throws Exception {
         // 初始化布隆过滤器
         bloomFilters = new BloomFilters.Builder()
