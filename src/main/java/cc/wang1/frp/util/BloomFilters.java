@@ -135,6 +135,9 @@ public class BloomFilters {
 
         if (!bloomFilter.compareAndSet(oldBloomFilter, newBloomFilter)) {
             Logs.warn("Bloom Filter Concurrent Rebuild Failed");
+        }else {
+            blockedSet.clear();
+            unblockedSet.clear();
         }
 
         long end = Clocks.INSTANCE.currentTimeMillis();
