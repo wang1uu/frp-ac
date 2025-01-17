@@ -1,5 +1,6 @@
 package cc.wang1.frp.service.impl;
 
+import cc.wang1.frp.config.BloomFiltersConfigProperties;
 import cc.wang1.frp.entity.Host;
 import cc.wang1.frp.enums.HostFlagEnum;
 import cc.wang1.frp.mapper.service.HostMapperService;
@@ -24,6 +25,9 @@ public class AccessControlServiceImpl implements AccessControlService, Initializ
     private HostMapperService hostMapperService;
 
     private volatile BloomFilters bloomFilters;
+
+    @Resource
+    private BloomFiltersConfigProperties bloomFiltersConfigProperties;
 
     @Override
     public boolean accessControl(String ip) {
@@ -62,9 +66,9 @@ public class AccessControlServiceImpl implements AccessControlService, Initializ
                     Logs.info("初始化数据 [{}]", Jsons.toJson(data));
                     return data;
                 })
-                .withRebuildInterval(1L, TimeUnit.HOURS)
-                .withFpp(0.00001)
-                .withInsertions(100000)
+                .withRebuildInterval(bloomFiltersConfigProperties.getRebuildInterval(), TimeUnit.SECONDS)
+                .withFpp(bloomFiltersConfigProperties.getFpp())
+                .withInsertions(bloomFiltersConfigProperties.getInsertions())
                 .build();
     }
 }
