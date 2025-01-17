@@ -35,4 +35,4 @@ CREATE UNIQUE INDEX "idx_access_token"
     ON "USER" (
                  "access_token"
         );
-INSERT INTO "USER" ("user_id", "password", "access_token", "access_token_expiry") VALUES ('paidax', 'd8b42a27a7819049b9e79efa2266ebbc', '3314f729a7eeb0608f2971bc6c2d46a2', '-1');
+INSERT INTO "USER" ("user_id", "password", "access_token", "access_token_expiry") VALUES ('paidax', 'd8b42a27a7819049b9e79efa2266ebbc', '569abea41d93c4a39d2e33e923c68f51', '9223372036854775807');

@@ -6,6 +6,7 @@ import cc.wang1.frp.mapper.service.UserMapperService;
 import cc.wang1.frp.util.Clocks;
 import cc.wang1.frp.util.Jsons;
 import cc.wang1.frp.util.SpringContexts;
+import com.google.common.hash.Hashing;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +53,7 @@ public class AccessTokenControllerAdvisor extends AbstractPointcutAdvisor {
                     throw new AccessTokenValidationException(String.format("access token 不存在或已失效 request [%s]", Jsons.toJson(servletRequestAttributes)));
                 }
 
+                accessToken = Hashing.murmur3_128().hashBytes(accessToken.getBytes()).toString();
                 User user = SpringContexts.getSpringContext().getBean(UserMapperService.class).validateAccessToken(accessToken);
                 if (user == null || user.getAccessTokenExpiry() < Clocks.INSTANCE.currentTimeMillis()) {
                     throw new AccessTokenValidationException(String.format("access token 不存在或已失效 request [%s]", Jsons.toJson(servletRequestAttributes)));
