@@ -5,10 +5,7 @@ import cc.wang1.frp.enums.VerifiableEnum;
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
@@ -16,6 +13,8 @@ import java.util.Optional;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class MessagePack<T> implements Serializable {
 
     private static final long serialVersionUID = -4124613117037133474L;

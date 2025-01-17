@@ -4,9 +4,11 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 
 @MapperScan("cc.wang1.frp.mapper")
+@EnableAspectJAutoProxy
 @SpringBootApplication
 public class FrpAcApplication implements CommandLineRunner {
 

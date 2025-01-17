@@ -4,7 +4,6 @@ import cc.wang1.frp.dto.base.MessagePack;
 import cc.wang1.frp.entity.User;
 import cc.wang1.frp.mapper.service.UserMapperService;
 import cc.wang1.frp.util.Clocks;
-import cc.wang1.frp.util.Jsons;
 import cc.wang1.frp.util.SpringContexts;
 import com.google.common.hash.Hashing;
 import org.aopalliance.aop.Advice;
@@ -48,15 +47,15 @@ public class AccessTokenControllerAdvisor extends AbstractPointcutAdvisor {
                 String accessToken = "";
                 ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
                 if (servletRequestAttributes == null
-                        || StringUtils.isBlank(accessToken = servletRequestAttributes.getRequest().getParameter(PARAMETER_NAME))
-                        || StringUtils.isBlank(accessToken = servletRequestAttributes.getRequest().getHeader(PARAMETER_NAME))) {
-                    throw new AccessTokenValidationException(String.format("access token 不存在或已失效 request [%s]", Jsons.toJson(servletRequestAttributes)));
+                        || (StringUtils.isBlank(accessToken = servletRequestAttributes.getRequest().getParameter(PARAMETER_NAME))
+                            && StringUtils.isBlank(accessToken = servletRequestAttributes.getRequest().getHeader(PARAMETER_NAME)))) {
+                    throw new AccessTokenValidationException(String.format("Access Token [%s] 不存在或已失效", accessToken));
                 }
 
                 accessToken = Hashing.murmur3_128().hashBytes(accessToken.getBytes()).toString();
                 User user = SpringContexts.getSpringContext().getBean(UserMapperService.class).validateAccessToken(accessToken);
                 if (user == null || user.getAccessTokenExpiry() < Clocks.INSTANCE.currentTimeMillis()) {
-                    throw new AccessTokenValidationException(String.format("access token 不存在或已失效 request [%s]", Jsons.toJson(servletRequestAttributes)));
+                    throw new AccessTokenValidationException(String.format("Access Token [%s] 不存在或已失效", accessToken));
                 }
 
                 return invocation.proceed();
