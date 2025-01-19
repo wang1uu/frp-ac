@@ -69,9 +69,6 @@ class FrpAcApplicationTests {
                 .build();
 
         LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(5));
-
-        System.out.println(bloomFilter.contains("a"));
-        System.out.println(bloomFilter.contains("x"));
     }
 
     @Test
