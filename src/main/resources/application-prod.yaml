@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    username: paidax
+    password: mdsywwxsmt
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:/Users/wang1uu/code/frp-ac/src/main/resources/db/data
+    hikari:
+      maximum-pool-size: 12
+      minimum-idle: 1
+      idle-timeout: 300000
+      connection-timeout: 20000
+      connection-test-query: select 1
+      driver-class-name: org.sqlite.JDBC
+  flyway:
+    enabled: true
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:/Users/wang1uu/code/frp-ac/src/main/resources/db/data
+    locations: classpath:db/scheme
+    baseline-on-migrate: true
+    user: paidax
+    password: mdsywwxsmt
+bloomfilter:
+  fpp: 0.0000001
+  insertions: 100000
+  rebuild-interval: 600
