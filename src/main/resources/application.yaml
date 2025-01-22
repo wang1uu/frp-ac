@@ -1,7 +1,7 @@
 server:
   port: 9777
   servlet:
-    context-path: /ac
+    context-path: /
 
 spring:
   application:

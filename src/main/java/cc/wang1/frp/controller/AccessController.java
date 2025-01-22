@@ -2,12 +2,16 @@ package cc.wang1.frp.controller;
 
 import cc.wang1.frp.controller.advice.ValidateToken;
 import cc.wang1.frp.dto.base.MessagePack;
+import cc.wang1.frp.dto.frp.ValidatedResultDTO;
 import cc.wang1.frp.service.AccessControlService;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 @RestController
 public class AccessController {
@@ -52,5 +56,10 @@ public class AccessController {
         return MessagePack.<Boolean>builder()
                 .status(MessagePack.StatusCode.SUCCESS)
                 .build();
+    }
+
+    @RequestMapping("/ac")
+    public ValidatedResultDTO<?> frpAc(HttpServletRequest request) throws IOException {
+        return accessControlService.frpAc(request);
     }
 }

@@ -1,5 +1,6 @@
 package cc.wang1.frp;
 
+import cc.wang1.frp.dto.frp.NewUserConnDTO;
 import cc.wang1.frp.entity.Host;
 import cc.wang1.frp.enums.HostFlagEnum;
 import cc.wang1.frp.enums.VerifiableEnum;
@@ -8,6 +9,7 @@ import cc.wang1.frp.util.BloomFilters;
 import cc.wang1.frp.util.Clocks;
 import cc.wang1.frp.util.Jsons;
 import cc.wang1.frp.util.Logs;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.benmanes.caffeine.cache.*;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -146,5 +148,20 @@ class FrpAcApplicationTests {
                 return currentDuration;
             }
         };
+    }
+
+    @Test
+    public void test06() {
+        JsonNode jsonData = Jsons.readTree("{\"version\":\"0.1.0\",\"op\":\"NewUserConn\",\"content\":{\"user\":{\"user\":\"\",\"metas\":null,\"run_id\":\"673ff655461998ee\"},\"proxy_name\":\"demo\",\"proxy_type\":\"tcp\",\"remote_addr\":\"172.21.224.65:55412\"}}\n");
+
+        System.out.println(jsonData.get("op").asText());
+        System.out.println(jsonData.get("content").toString());
+    }
+
+    @Test
+    public void test07() {
+        String data = "{\"user\":{\"user\":\"\",\"metas\":null,\"run_id\":\"59aec435356e44f0\"},\"proxy_name\":\"demo\",\"proxy_type\":\"tcp\",\"remote_addr\":\"172.21.224.65:63717\"}";
+        NewUserConnDTO bean = Jsons.toBean(data, NewUserConnDTO.class);
+        System.out.println(bean);
     }
 }
