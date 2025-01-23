@@ -1,21 +1,18 @@
 package cc.wang1.frp.service.impl;
 
-import cc.wang1.frp.config.BloomFiltersConfigProperties;
 import cc.wang1.frp.dto.frp.NewUserConnDTO;
 import cc.wang1.frp.dto.frp.ValidatedResultDTO;
-import cc.wang1.frp.entity.Host;
 import cc.wang1.frp.enums.FrpOptEnum;
-import cc.wang1.frp.enums.HostFlagEnum;
 import cc.wang1.frp.enums.VerifiableEnum;
+import cc.wang1.frp.event.FrpAccessEvent;
 import cc.wang1.frp.mapper.service.HostMapperService;
 import cc.wang1.frp.service.AccessControlService;
 import cc.wang1.frp.util.BloomFilters;
 import cc.wang1.frp.util.Jsons;
 import cc.wang1.frp.util.Logs;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import cc.wang1.frp.util.SpringContexts;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -23,20 +20,15 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Service
-public class AccessControlServiceImpl implements AccessControlService, InitializingBean {
+public class AccessControlServiceImpl implements AccessControlService {
 
     @Resource
     private HostMapperService hostMapperService;
 
-    private volatile BloomFilters bloomFilters;
-
-    @Resource
-    private BloomFiltersConfigProperties bloomFiltersConfigProperties;
+    @Resource(name = "frpAccessIpBloomFilter")
+    private BloomFilters bloomFilters;
 
     @Override
     public boolean accessControl(String ip) {
@@ -61,24 +53,6 @@ public class AccessControlServiceImpl implements AccessControlService, Initializ
     public void unblock(String ip) {
         Logs.info("unblock [{}] at [{}]", ip, LocalDateTime.now());
         bloomFilters.unblock(ip);
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        // 初始化布隆过滤器
-        bloomFilters = new BloomFilters.Builder()
-                .withSupplier(() -> {
-                    List<String> data = hostMapperService.list(Wrappers.lambdaQuery(Host.class).eq(Host::getFlag, HostFlagEnum.DENIED.getCode()))
-                            .stream()
-                            .map(Host::getIp)
-                            .collect(Collectors.toList());
-                    Logs.info("初始化数据 [{}]", Jsons.toJson(data));
-                    return data;
-                })
-                .withRebuildInterval(bloomFiltersConfigProperties.getRebuildInterval(), TimeUnit.SECONDS)
-                .withFpp(bloomFiltersConfigProperties.getFpp())
-                .withInsertions(bloomFiltersConfigProperties.getInsertions())
-                .build();
     }
 
     @Override
@@ -119,6 +93,9 @@ public class AccessControlServiceImpl implements AccessControlService, Initializ
                             .reject_reason("your request has been blocked.")
                             .build();
                 }
+
+                // 检查IP
+                SpringContexts.getSpringContext().publishEvent(new FrpAccessEvent(this, ipAndPort[0]));
             }
         }catch (Exception e) {
             e.printStackTrace();

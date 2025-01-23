@@ -1,12 +1,11 @@
 package cc.wang1.frp.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 
 /**
@@ -62,6 +61,21 @@ public class Executors {
         };
         Runtime.getRuntime().addShutdownHook(new Thread(executor::shutdown, "ShutdownHook-" + threadName));
         return CompletableFuture.runAsync(task, executor);
+    }
+
+    @Bean
+    public Executor frpEventPublishExecuteThreadPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(CommonConstants.AVAILABLE_PROCESSORS_COUNT);
+        executor.setMaxPoolSize(CommonConstants.AVAILABLE_PROCESSORS_COUNT);
+        // LinkedBlockingQueue
+        executor.setQueueCapacity(1024);
+        executor.setThreadNamePrefix("frp_event_publish_executor_");
+        // TimeUnit.SECONDS
+        executor.setKeepAliveSeconds(60);
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
+        return executor;
     }
 }
 

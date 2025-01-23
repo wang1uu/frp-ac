@@ -5,11 +5,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 
 @MapperScan("cc.wang1.frp.mapper")
 @EnableAspectJAutoProxy
+@EnableFeignClients
 @SpringBootApplication
 @EnableConfigurationProperties
 public class FrpAcApplication implements CommandLineRunner {

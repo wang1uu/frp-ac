@@ -87,12 +87,18 @@ public class BloomFilters {
         return Optional.ofNullable(bloomFilter.get()).map(b -> b.mightContain(key)).orElse(false) || blockedSet.contains(key);
     }
 
+    // 保证接口性能 允许并发错误的出现
     public void block(String key) {
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(key)) blockedSet.add(key);
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(key) && !exist(key)) {
+            blockedSet.add(key);
+            unblockedSet.remove(key);
+        }
     }
-
     public void unblock(String key) {
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(key)) unblockedSet.add(key);
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(key) && exist(key)) {
+            unblockedSet.add(key);
+            blockedSet.remove(key);
+        }
     }
 
     /**

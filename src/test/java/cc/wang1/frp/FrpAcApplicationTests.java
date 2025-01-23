@@ -1,5 +1,6 @@
 package cc.wang1.frp;
 
+import cc.wang1.frp.client.IPClient;
 import cc.wang1.frp.dto.frp.NewUserConnDTO;
 import cc.wang1.frp.entity.Host;
 import cc.wang1.frp.enums.HostFlagEnum;
@@ -15,6 +16,7 @@ import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -32,6 +34,12 @@ class FrpAcApplicationTests {
 
     @Resource
     private HostMapperService hostMapperService;
+
+    @Value("${host.ip-info-token}")
+    private String token;
+
+    @Resource
+    private IPClient ipClient;
 
     @Test
     public void test01() {
@@ -163,5 +171,11 @@ class FrpAcApplicationTests {
         String data = "{\"user\":{\"user\":\"\",\"metas\":null,\"run_id\":\"59aec435356e44f0\"},\"proxy_name\":\"demo\",\"proxy_type\":\"tcp\",\"remote_addr\":\"172.21.224.65:63717\"}";
         NewUserConnDTO bean = Jsons.toBean(data, NewUserConnDTO.class);
         System.out.println(bean);
+    }
+
+    @Test
+    public void test08() {
+        System.out.println(ipClient.queryIPInfo("60.204.153.242", token));
+        System.out.println(ipClient.queryIPInfo("60.204.153.242", token));
     }
 }
