@@ -24,4 +24,5 @@ bloomfilter:
   insertions: 100000
   rebuild-interval: 600
 host:
-  ip-info: http://ipinfo.io?token=caf86c0d272048
+  ip-info: http://ipinfo.io
+  ip-info-token: caf86c0d272048
